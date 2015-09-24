@@ -10,9 +10,10 @@
 #define inline __inline
 #endif
 
-#define p(x) (x)->parent /*quick definition for node's parent*/
+#define p(x) (x)->parent /*quick define for node's parent*/
 #define left(x) (x)->left
 #define right(x) (x)->right
+#define color(x) (x)->color
 
  /*"private" function for tree rotations*/
 static inline void left_rotate(rb_tree_t *tree, rb_node_t * x) {
@@ -61,7 +62,6 @@ static inline void right_rotate(rb_tree_t *tree, rb_node_t* y) {
 };
 /*fix-up functions*/
 static int rb_tree_insert_fixup(rb_tree_t *tree, rb_node_t *x) {
-	/*TODO*/
 	while (p(x)->color & RED) { /*move up the tree*/
 		if (p(x) == left(p(p(x)))) { /*DO THE LEFT PART*/
 			rb_node_t *uncle = right(p(p(x)));
@@ -97,7 +97,7 @@ static int rb_tree_insert_fixup(rb_tree_t *tree, rb_node_t *x) {
 			}
 			/*CASE 2 &3, X'S UNCLE IS BLACK */
 			else {
-				/*CASE 2, X IS A LEFTT CHILD OF ITS PARENT*/
+				/*CASE 2, X IS A LEFT CHILD OF ITS PARENT*/
 				if (x == left(p(x))) {
 					x = p(x);
 					right_rotate(tree, x);
@@ -117,6 +117,73 @@ static int rb_tree_insert_fixup(rb_tree_t *tree, rb_node_t *x) {
 
 static int rb_tree_delete_fixup(rb_tree_t *tree, rb_node_t *x) {
 	/*TODO*/
+	while (x != tree->root && x->color == BLACK ) {
+		/*if x is a left child of its parent*/
+		if (x == left(p(x))) {
+			/*get x's sibling, w*/
+			rb_node_t *w = right(p(x));
+			/*CASE 1, w is RED*/
+			if (color(w) == RED) {
+				/*recolor w BLACK, recolor parent RED*/
+				color(w) = BLACK;
+				color(p(x)) = RED;
+				left_rotate(tree, p(x));
+				w = right(p(x));
+			}
+			/*CASE 2*/
+			if (color(left(w)) == BLACK && color(right(w)) == BLACK) {
+				color(w) = RED;
+				x = p(x);
+			}
+			/*CASE 3 & 4*/
+			else {
+				/*CASE 3*/
+				if (color(right(w)) == BLACK) {
+					color(left(w)) = BLACK;
+					color(w) = RED;
+					right_rotate(tree, w);
+					w = right(p(x));
+				};
+				color(w) = color(p(x));
+				color(p(x)) = BLACK;
+				color(right(w)) = BLACK;
+				left_rotate(tree, p(x));
+				x = tree->root;
+			}
+		} /*if x is a right child of its parent, mirrors code above*/
+		else {
+			/*get x's sibling, w*/
+			rb_node_t *w = left(p(x));
+			/*CASE 1, w is RED*/
+			if (color(w) == RED) {
+				/*recolor w BLACK, recolor parent RED*/
+				color(w) = BLACK;
+				color(p(x)) = RED;
+				right_rotate(tree, p(x));
+				w = left(p(x));
+			}
+			/*CASE 2*/
+			if (color(left(w)) == BLACK && color(right(w)) == BLACK) {
+				color(w) = RED;
+				x = p(x);
+			}
+			/*CASE 3 & 4*/
+			else {
+				/*CASE 3*/
+				if (color(left(w)) == BLACK) {
+					color(right(w)) = BLACK;
+					color(w) = RED;
+					left_rotate(tree, w);
+					w = left(p(x));
+				};
+				color(w) = color(p(x));
+				color(p(x)) = BLACK;
+				color(left(w)) = BLACK;
+				right_rotate(tree, p(x));
+				x = tree->root;
+			}
+		}
+	}
 	return 0;
 }
 
@@ -131,7 +198,7 @@ rb_node_t *node_create(void *p, void *key, int color) {
 	return node;
 }
 
-rb_tree_t *rb_tree_create(rb_tree_compare comp) {
+rb_tree_t *rb_tree_create(rb_tree_compare *comp) {
 	rb_tree_t *tree = (rb_tree_t*)malloc(sizeof(rb_tree_t));
 	tree->cmpr = comp;
 	rb_node_t *root = node_create(NULL, NULL, BLACK);
