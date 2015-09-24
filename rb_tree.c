@@ -246,8 +246,18 @@ int rb_tree_delete(rb_node_t *node, rb_tree_t *tree) {
 }
 
 rb_node_t *rb_tree_lookup(void *key, rb_tree_t *tree) {
-
-	rb_node_t *root = tree->root;
-	/*TODO*/
-	return NULL;
+	rb_tree_compare *cmpr = tree->cmpr; /*key comparator function*/
+	rb_node_t *currnode = tree->root;
+	rb_node_t *ref_node = NULL; /*stores a node*/
+	while (currnode != NULL) {
+		ref_node = currnode;
+		if (cmpr(key(currnode), key) == 0) break;
+		if (cmpr(key(currnode), key) == 1) {
+			currnode = left(currnode);
+		}
+		else {
+			currnode = right(currnode);
+		}
+	};
+	return ref_node;
 }
