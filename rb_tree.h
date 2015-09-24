@@ -26,7 +26,7 @@ typedef struct rb_node {
 	void *key;
 } rb_node_t;
 
-/*comparator function, returns 0 if key1 and key2 are equal*/
+/*comparator function, returns 0 if key1 and key2 are equal, 1 if key1 is bigger than key2, -1 if vice versa*/
 typedef int rb_tree_compare(void* key1, void *key2);
 
 typedef struct rb_tree {

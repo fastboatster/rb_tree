@@ -14,7 +14,7 @@
 #define left(x) (x)->left
 #define right(x) (x)->right
 #define color(x) (x)->color
-
+#define key(x) (x)->key
  /*"private" function for tree rotations*/
 static inline void left_rotate(rb_tree_t *tree, rb_node_t * x) {
 	rb_node_t *parent = x->parent;
@@ -117,7 +117,7 @@ static int rb_tree_insert_fixup(rb_tree_t *tree, rb_node_t *x) {
 
 static int rb_tree_delete_fixup(rb_tree_t *tree, rb_node_t *x) {
 	/*TODO*/
-	while (x != tree->root && x->color == BLACK ) {
+	while (x != tree->root && color(x) == BLACK ) {
 		/*if x is a left child of its parent*/
 		if (x == left(p(x))) {
 			/*get x's sibling, w*/
@@ -209,6 +209,31 @@ rb_tree_t *rb_tree_create(rb_tree_compare *comp) {
 
 int rb_tree_insert(rb_node_t *node, rb_tree_t *tree) {
 	/*TODO*/
+	rb_tree_compare *cmpr = tree->cmpr; /*key comparator function*/
+	rb_node_t *currnode = tree->root;
+	rb_node_t *ref_node = NULL; /*stores a leaf node to which we will append new node*/
+	while (currnode != NULL) {
+		if ( cmpr(key(currnode), key(node)) == 1 ) {
+			currnode = left(currnode);
+		}
+		else {
+			currnode = right(currnode);
+		}
+	};
+	p(node) = ref_node;
+	if (ref_node == NULL) { /*no nodes in the tree*/
+		tree->root = node;
+	}	else {
+		/*found the node, deciding whether to append to the left or to the right*/
+		if (cmpr(key(ref_node), key(node)) == 1) {
+			left(ref_node) = node;
+		}
+		else {
+			right(ref_node) = node;
+		}
+	};
+	left(node) = right(node) = NULL;
+	color(node) = RED;
 	rb_tree_insert_fixup(tree, node);
 	return 0;
 }
