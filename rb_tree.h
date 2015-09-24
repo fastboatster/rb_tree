@@ -31,7 +31,7 @@ typedef int rb_tree_compare(void* key1, void *key2);
 
 typedef struct rb_tree {
 	rb_node_t *root;
-	int height;
+	/*int height;*/
 	rb_tree_compare *cmpr;
 } rb_tree_t;
 

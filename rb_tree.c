@@ -203,7 +203,7 @@ rb_tree_t *rb_tree_create(rb_tree_compare *comp) {
 	tree->cmpr = comp;
 	rb_node_t *root = node_create(NULL, NULL, BLACK);
 	tree->root = root;
-	tree->height = 0;
+	/*tree->height = 0;*/
 	return tree;
 }
 
@@ -213,6 +213,7 @@ int rb_tree_insert(rb_node_t *node, rb_tree_t *tree) {
 	rb_node_t *currnode = tree->root;
 	rb_node_t *ref_node = NULL; /*stores a leaf node to which we will append new node*/
 	while (currnode != NULL) {
+		ref_node = currnode;
 		if ( cmpr(key(currnode), key(node)) == 1 ) {
 			currnode = left(currnode);
 		}
