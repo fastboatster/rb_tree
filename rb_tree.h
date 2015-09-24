@@ -2,7 +2,7 @@
  * rb_tree.h
  *
  *  Created on: Sep 19, 2015
- *      Author: sergey
+ *      Author: Sergey
  */
 
 #ifndef RB_TREE_H_

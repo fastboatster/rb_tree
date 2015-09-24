@@ -2,7 +2,7 @@
  * rb_tree.c
  *
  *  Created on: Sep 19, 2015
- *      Author: sergey
+ *      Author: Sergey
  */
 
 #include "rb_tree.h"
@@ -10,57 +10,60 @@
 #define inline __inline
 #endif
 
-#define p(x) (x)->parent /*quick define for node's parent*/
+ /*some definitions here to make it look like Cormen's style*/
+#define p(x) (x)->parent 
 #define left(x) (x)->left
 #define right(x) (x)->right
 #define color(x) (x)->color
 #define key(x) (x)->key
- /*"private" function for tree rotations*/
+
+ /*"private" functions for tree rotations*/
 static inline void left_rotate(rb_tree_t *tree, rb_node_t * x) {
-	rb_node_t *parent = x->parent;
-	rb_node_t *y = x->right;
-	rb_node_t *y_left = y->left;
+	rb_node_t *parent = p(x);
+	rb_node_t *y = right(x);
+	rb_node_t *y_left = left(x);
 	/*reassignments*/
-	x->right = y_left;
-	y_left->parent = x;
-	y->parent = parent;
-	x->parent = y;
-	y->left = x;
+	right(x) = y_left;
+	p(y_left) = x;
+	p(y) = parent;
+	p(x) = y;
+	left(y) = x;
 	if (parent == NULL) {
 		tree->root = y;
 	}
 	else {
-		if (parent->left == x) {
-			parent->left = y;
+		if (left(parent) == x) {
+			left(parent) = y;
 		}
 		else {
-			parent->right = y;
+			right(parent) = y;
 		}
 	}
 };
 static inline void right_rotate(rb_tree_t *tree, rb_node_t* y) {
-	rb_node_t *parent = y->parent;
-	rb_node_t *x = y->left;
-	rb_node_t *x_right = x->right;
+	rb_node_t *parent = p(y);
+	rb_node_t *x = left(y);
+	rb_node_t *x_right = right(x);
 	/*reassignment*/
-	x->right = y;
-	y->parent = x;
-	y->left = x_right;
-	x_right->parent = y;
-	x->parent = parent;
+	right(x) = y;
+	p(y) = x;
+	left(y) = x_right;
+	p(x_right) = y;
+	p(x) = parent;
 	if (parent == NULL) {
 		tree->root = x;
 	}
 	else {
-		if (parent->left == y) {
-			parent->left = x;
+		if (left(parent) == y) {
+			left(parent) = x;
 		}
 		else {
-			parent->right = x;
+			right(parent) = x;
 		}
 	}
 };
-/*fix-up functions*/
+
+/*"private" fix-up functions*/
 static int rb_tree_insert_fixup(rb_tree_t *tree, rb_node_t *x) {
 	while (p(x)->color & RED) { /*move up the tree*/
 		if (p(x) == left(p(p(x)))) { /*DO THE LEFT PART*/
@@ -86,7 +89,7 @@ static int rb_tree_insert_fixup(rb_tree_t *tree, rb_node_t *x) {
 				};
 			}
 		}
-		else { 
+		else {
 			/*IF THE NODE IS ON THE LEFT SIDE, SYMMETRICAL TO THE CODE ABOVE*/
 			rb_node_t *uncle = left(p(p(x)));
 			/*CASE 1, UNCLE AND PARENT NODES ARE BOTH RED*/
@@ -117,7 +120,7 @@ static int rb_tree_insert_fixup(rb_tree_t *tree, rb_node_t *x) {
 
 static int rb_tree_delete_fixup(rb_tree_t *tree, rb_node_t *x) {
 	/*TODO*/
-	while (x != tree->root && color(x) == BLACK ) {
+	while (x != tree->root && color(x) == BLACK) {
 		/*if x is a left child of its parent*/
 		if (x == left(p(x))) {
 			/*get x's sibling, w*/
@@ -187,6 +190,7 @@ static int rb_tree_delete_fixup(rb_tree_t *tree, rb_node_t *x) {
 	return 0;
 }
 
+/*node allocation and init*/
 rb_node_t *node_create(void *p, void *key, int color) {
 	rb_node_t *node = (rb_node_t*)malloc(sizeof(rb_node_t));
 	node->p = p;
@@ -198,23 +202,23 @@ rb_node_t *node_create(void *p, void *key, int color) {
 	return node;
 }
 
+/*tree alloc and init*/
 rb_tree_t *rb_tree_create(rb_tree_compare *comp) {
 	rb_tree_t *tree = (rb_tree_t*)malloc(sizeof(rb_tree_t));
 	tree->cmpr = comp;
-	rb_node_t *root = node_create(NULL, NULL, BLACK);
-	tree->root = root;
+	//rb_node_t *root = NULL /*node_create(NULL, NULL, BLACK)*/;
+	tree->root = NULL;
 	/*tree->height = 0;*/
 	return tree;
 }
 
 int rb_tree_insert(rb_node_t *node, rb_tree_t *tree) {
-	/*TODO*/
 	rb_tree_compare *cmpr = tree->cmpr; /*key comparator function*/
 	rb_node_t *currnode = tree->root;
 	rb_node_t *ref_node = NULL; /*stores a leaf node to which we will append new node*/
 	while (currnode != NULL) {
 		ref_node = currnode;
-		if ( cmpr(key(currnode), key(node)) == 1 ) {
+		if (cmpr(key(currnode), key(node)) == 1) {
 			currnode = left(currnode);
 		}
 		else {
@@ -224,7 +228,8 @@ int rb_tree_insert(rb_node_t *node, rb_tree_t *tree) {
 	p(node) = ref_node;
 	if (ref_node == NULL) { /*no nodes in the tree*/
 		tree->root = node;
-	}	else {
+	}
+	else {
 		/*found the node, deciding whether to append to the left or to the right*/
 		if (cmpr(key(ref_node), key(node)) == 1) {
 			left(ref_node) = node;
