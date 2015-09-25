@@ -190,6 +190,35 @@ static int rb_tree_delete_fixup(rb_tree_t *tree, rb_node_t *x) {
 	return 0;
 }
 
+/*tree minimum and maximum*/
+static rb_node_t* tree_minimum(rb_node_t *subtree_root) {
+	rb_node_t *temp = subtree_root; 
+	while (left(temp)) {
+		temp = left(temp);
+	};
+	return temp;
+}
+
+static rb_node_t* tree_maximum(rb_node_t *subtree_root) {
+	rb_node_t * temp = subtree_root;
+	while (right(temp)) {
+		temp = right(temp);
+	}
+	return temp;
+}
+
+/*tree successor*/
+static rb_node_t* tree_successor(rb_tree_t *tree, rb_node_t *z) {
+	/*TODO*/
+	rb_node_t *tmp = z;
+	if (right(tmp)) return tree_minimum(right(tmp));
+	rb_node_t *parent = p(tmp);
+	while (parent != NULL && tmp == right(parent)) {
+		tmp = parent;
+		parent = p(parent);
+	};
+	return parent;
+}
 /*node allocation and init*/
 rb_node_t *node_create(void *p, void *key, int color) {
 	rb_node_t *node = (rb_node_t*)malloc(sizeof(rb_node_t));
