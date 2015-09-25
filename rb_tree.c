@@ -209,7 +209,7 @@ static rb_node_t* tree_maximum(rb_node_t *subtree_root) {
 
 /*tree successor*/
 static rb_node_t* tree_successor(rb_tree_t *tree, rb_node_t *z) {
-	/*TODO*/
+	/*TODO check if this works*/
 	rb_node_t *tmp = z;
 	if (right(tmp)) return tree_minimum(right(tmp));
 	rb_node_t *parent = p(tmp);
