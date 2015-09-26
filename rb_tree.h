@@ -43,7 +43,7 @@ rb_node_t *node_create(void *p, void *key, int color);
 
 int rb_tree_insert(rb_node_t *node, rb_tree_t *tree);
 
-int rb_tree_delete(rb_node_t *node, rb_tree_t *tree);
+rb_node_t* rb_tree_delete(rb_node_t *node, rb_tree_t *tree);
 
 rb_node_t *rb_tree_lookup(void *key, rb_tree_t *tree);
 

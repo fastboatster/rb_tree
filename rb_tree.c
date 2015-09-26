@@ -273,10 +273,42 @@ int rb_tree_insert(rb_node_t *node, rb_tree_t *tree) {
 	return 0;
 }
 
-int rb_tree_delete(rb_node_t *node, rb_tree_t *tree) {
-	/*TODO*/
-	rb_tree_delete_fixup(tree, node);
-	return 0;
+rb_node_t* rb_tree_delete(rb_node_t *node, rb_tree_t *tree) {
+	/*TODO check*/
+	rb_node_t *temp = NULL;
+	rb_node_t *x = NULL;
+	if (!right(node) || !left(node)) {
+		temp = node;
+	}
+	else {
+		temp = tree_successor(tree, node);
+	};
+	if (left(temp)) {
+		x = left(temp);
+	}
+	else {
+		x = right(temp);
+	};
+	p(x) = p(temp);
+	/*if we are deleting the root node*/
+	if (!p(temp)) {
+		tree->root = x;
+	}
+	else {
+		if (temp == left(p(temp))) { /*our node is a left child of its parent*/
+			left(p(temp)) = x;
+		}
+		else {
+			right(p(temp)) = x;
+		};
+	};
+	if (temp != node) {
+		 node->key = temp->key;
+		 node->p = temp->p;
+	};
+	if (temp->color == BLACK)
+		rb_tree_delete_fixup(tree, x);
+	return temp;
 }
 
 rb_node_t *rb_tree_lookup(void *key, rb_tree_t *tree) {
