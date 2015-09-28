@@ -9,7 +9,15 @@
 #ifdef _MSC_VER
 #define inline __inline
 #endif
-
+static rb_node_t nil_t = {
+	.color = BLACK,
+	.parent = NULL,
+	.left = NULL,
+	.right = NULL,
+	.key = NULL,
+	.p = NULL
+};
+#define is_nil(x) (((x) == &(nil_t)) ? 1 : 0 )
  /*some definitions here to make it look like Cormen's style*/
 #define p(x) (x)->parent 
 #define left(x) (x)->left
@@ -28,7 +36,7 @@ static inline void left_rotate(rb_tree_t *tree, rb_node_t * x) {
 	p(y) = parent;
 	p(x) = y;
 	left(y) = x;
-	if (parent == NULL) {
+	if (parent == &nil_t) {
 		tree->root = y;
 	}
 	else {
@@ -50,7 +58,7 @@ static inline void right_rotate(rb_tree_t *tree, rb_node_t* y) {
 	left(y) = x_right;
 	p(x_right) = y;
 	p(x) = parent;
-	if (parent == NULL) {
+	if (parent == &nil_t) {
 		tree->root = x;
 	}
 	else {
@@ -65,7 +73,7 @@ static inline void right_rotate(rb_tree_t *tree, rb_node_t* y) {
 
 /*"private" fix-up functions*/
 static int rb_tree_insert_fixup(rb_tree_t *tree, rb_node_t *x) {
-	while (p(x)->color & RED) { /*move up the tree*/
+	while (p(x)->color == RED) { /*move up the tree*/
 		if (p(x) == left(p(p(x)))) { /*DO THE LEFT PART*/
 			rb_node_t *uncle = right(p(p(x)));
 			/*CASE 1, UNCLE AND PARENT NODES ARE BOTH RED*/
@@ -82,7 +90,7 @@ static int rb_tree_insert_fixup(rb_tree_t *tree, rb_node_t *x) {
 					left_rotate(tree, x);
 				};
 				/*CASE 3, X IS A LEFT CHILD OF ITS PARENT*/
-				if (x == right(p(x))) { /*check just in case*/
+				if (x == left(p(x))) { /*check just in case*/
 					p(x)->color = BLACK;
 					p(p(x))->color = RED;
 					right_rotate(tree, p(p(x)));
@@ -93,7 +101,7 @@ static int rb_tree_insert_fixup(rb_tree_t *tree, rb_node_t *x) {
 			/*IF THE NODE IS ON THE LEFT SIDE, SYMMETRICAL TO THE CODE ABOVE*/
 			rb_node_t *uncle = left(p(p(x)));
 			/*CASE 1, UNCLE AND PARENT NODES ARE BOTH RED*/
-			if (uncle->color & RED) {
+			if (uncle->color == RED) {
 				uncle->color = p(x)->color = BLACK; /*recolor*/
 				p(p(x))->color = RED;
 				x = p(p(x)); /*move pointer up, x is now grandparent node*/
@@ -106,7 +114,7 @@ static int rb_tree_insert_fixup(rb_tree_t *tree, rb_node_t *x) {
 					right_rotate(tree, x);
 				};
 				/*CASE 3, X IS A RIGHT CHILD OF ITS PARENT*/
-				if (x == left(p(x))) { /*check just in case*/
+				if (x == right(p(x))) { /*check just in case*/
 					p(x)->color = BLACK;
 					p(p(x))->color = RED;
 					left_rotate(tree, p(p(x)));
@@ -193,7 +201,7 @@ static int rb_tree_delete_fixup(rb_tree_t *tree, rb_node_t *x) {
 /*tree minimum and maximum*/
 static rb_node_t* tree_minimum(rb_node_t *subtree_root) {
 	rb_node_t *temp = subtree_root; 
-	while (left(temp)) {
+	while (!is_nil(left(temp))) {
 		temp = left(temp);
 	};
 	return temp;
@@ -201,7 +209,7 @@ static rb_node_t* tree_minimum(rb_node_t *subtree_root) {
 
 static rb_node_t* tree_maximum(rb_node_t *subtree_root) {
 	rb_node_t * temp = subtree_root;
-	while (right(temp)) {
+	while (!is_nil(right(temp))) {
 		temp = right(temp);
 	}
 	return temp;
@@ -211,41 +219,41 @@ static rb_node_t* tree_maximum(rb_node_t *subtree_root) {
 static rb_node_t* tree_successor(rb_tree_t *tree, rb_node_t *z) {
 	/*TODO check if this works*/
 	rb_node_t *tmp = z;
-	if (right(tmp)) return tree_minimum(right(tmp));
+	if (!is_nil(right(tmp))) return tree_minimum(right(tmp));
 	rb_node_t *parent = p(tmp);
-	while (parent != NULL && tmp == right(parent)) {
+	while (parent != &nil_t && tmp == right(parent)) {
 		tmp = parent;
 		parent = p(parent);
 	};
 	return parent;
 }
 /*node allocation and init*/
-rb_node_t *node_create(void *p, void *key, int color) {
+rb_node_t *node_create(void *p, void *key) {
 	rb_node_t *node = (rb_node_t*)malloc(sizeof(rb_node_t));
 	node->p = p;
 	node->key = key;
-	node->left = NULL;
-	node->right = NULL;
+	node->left = &nil_t;
+	node->right = &nil_t;
 	node->parent = NULL;
-	node->color = color;
+	/*node->color = color;*/
 	return node;
 }
 
 /*tree alloc and init*/
-rb_tree_t *rb_tree_create(rb_tree_compare *comp) {
+rb_tree_t *rb_tree_create(rb_tree_compare comp) {
 	rb_tree_t *tree = (rb_tree_t*)malloc(sizeof(rb_tree_t));
 	tree->cmpr = comp;
 	//rb_node_t *root = NULL /*node_create(NULL, NULL, BLACK)*/;
-	tree->root = NULL;
+	tree->root = &nil_t;
 	/*tree->height = 0;*/
 	return tree;
 }
 
-int rb_tree_insert(rb_node_t *node, rb_tree_t *tree) {
-	rb_tree_compare *cmpr = tree->cmpr; /*key comparator function*/
+int rb_tree_insert(rb_tree_t *tree, rb_node_t *node) {
+	rb_tree_compare cmpr = tree->cmpr; /*key comparator function*/
 	rb_node_t *currnode = tree->root;
-	rb_node_t *ref_node = NULL; /*stores a leaf node to which we will append new node*/
-	while (currnode != NULL) {
+	rb_node_t *ref_node = &nil_t; /*stores a leaf node to which we will append new node*/
+	while (currnode != &nil_t) {
 		ref_node = currnode;
 		if (cmpr(key(currnode), key(node)) == 1) {
 			currnode = left(currnode);
@@ -255,11 +263,14 @@ int rb_tree_insert(rb_node_t *node, rb_tree_t *tree) {
 		}
 	};
 	p(node) = ref_node;
-	if (ref_node == NULL) { /*no nodes in the tree*/
+	if (ref_node == &nil_t) { /*no nodes in the tree*/
 		tree->root = node;
+		p(tree->root) = &nil_t;
+		/*left(tree->root) = &nil_t;
+		right(tree->root) = &nil_t;*/
 	}
 	else {
-		/*found the node, deciding whether to append to the left or to the right*/
+		/*found the node, deciding whether to append to the left or to the right of a given node*/
 		if (cmpr(key(ref_node), key(node)) == 1) {
 			left(ref_node) = node;
 		}
@@ -267,13 +278,13 @@ int rb_tree_insert(rb_node_t *node, rb_tree_t *tree) {
 			right(ref_node) = node;
 		}
 	};
-	left(node) = right(node) = NULL;
+	/*left(node) = right(node) = &nil_t;*/
 	color(node) = RED;
 	rb_tree_insert_fixup(tree, node);
 	return 0;
 }
 
-rb_node_t* rb_tree_delete(rb_node_t *node, rb_tree_t *tree) {
+rb_node_t* rb_tree_delete(rb_tree_t *tree,rb_node_t *node) {
 	/*TODO check*/
 	rb_node_t *temp = NULL;
 	rb_node_t *x = NULL;
@@ -311,8 +322,8 @@ rb_node_t* rb_tree_delete(rb_node_t *node, rb_tree_t *tree) {
 	return temp;
 }
 
-rb_node_t *rb_tree_lookup(void *key, rb_tree_t *tree) {
-	rb_tree_compare *cmpr = tree->cmpr; /*key comparator function*/
+rb_node_t *rb_tree_lookup(rb_tree_t *tree, void *key) {
+	rb_tree_compare cmpr = tree->cmpr; /*key comparator function*/
 	rb_node_t *currnode = tree->root;
 	rb_node_t *ref_node = NULL; /*stores a node*/
 	while (currnode != NULL) {

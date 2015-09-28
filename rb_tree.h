@@ -27,24 +27,24 @@ typedef struct rb_node {
 } rb_node_t;
 
 /*comparator function, returns 0 if key1 and key2 are equal, 1 if key1 is bigger than key2, -1 if vice versa*/
-typedef int rb_tree_compare(void* key1, void *key2);
+typedef int (*rb_tree_compare)(void* key1, void *key2);
 
 typedef struct rb_tree {
 	rb_node_t *root;
 	/*int height;*/
-	rb_tree_compare *cmpr;
+	rb_tree_compare cmpr;
 } rb_tree_t;
 
-rb_tree_t *rb_tree_create(rb_tree_compare cmpr);
+rb_tree_t *rb_tree_create(rb_tree_compare comp);
 
 int rb_tree_destroy(rb_tree_t *tree);
 
-rb_node_t *node_create(void *p, void *key, int color);
+rb_node_t *node_create(void *p, void *key);
 
-int rb_tree_insert(rb_node_t *node, rb_tree_t *tree);
+int rb_tree_insert(rb_tree_t *tree, rb_node_t *node);
 
-rb_node_t* rb_tree_delete(rb_node_t *node, rb_tree_t *tree);
+rb_node_t* rb_tree_delete(rb_tree_t *tree, rb_node_t *node);
 
-rb_node_t *rb_tree_lookup(void *key, rb_tree_t *tree);
+rb_node_t *rb_tree_lookup( rb_tree_t *tree, void *key);
 
 #endif /* RB_TREE_H_ */
