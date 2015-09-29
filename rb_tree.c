@@ -77,7 +77,7 @@ static int rb_tree_insert_fixup(rb_tree_t *tree, rb_node_t *x) {
 		if (p(x) == left(p(p(x)))) { /*DO THE LEFT PART*/
 			rb_node_t *uncle = right(p(p(x)));
 			/*CASE 1, UNCLE AND PARENT NODES ARE BOTH RED*/
-			if (uncle->color & RED) {
+			if (uncle->color == RED) {
 				uncle->color = p(x)->color = BLACK; /*recolor*/
 				p(p(x))->color = RED;
 				x = p(p(x)); /*move pointer up, x is now grandparent node*/
@@ -90,11 +90,11 @@ static int rb_tree_insert_fixup(rb_tree_t *tree, rb_node_t *x) {
 					left_rotate(tree, x);
 				};
 				/*CASE 3, X IS A LEFT CHILD OF ITS PARENT*/
-				if (x == left(p(x))) { /*check just in case*/
+				//if (x == left(p(x))) { /*check just in case*/
 					p(x)->color = BLACK;
 					p(p(x))->color = RED;
 					right_rotate(tree, p(p(x)));
-				};
+				//};
 			}
 		}
 		else {
@@ -114,11 +114,11 @@ static int rb_tree_insert_fixup(rb_tree_t *tree, rb_node_t *x) {
 					right_rotate(tree, x);
 				};
 				/*CASE 3, X IS A RIGHT CHILD OF ITS PARENT*/
-				if (x == right(p(x))) { /*check just in case*/
+			//	if (x == right(p(x))) { /*check just in case*/
 					p(x)->color = BLACK;
 					p(p(x))->color = RED;
 					left_rotate(tree, p(p(x)));
-				};
+			//	};
 			}
 		}
 	}
