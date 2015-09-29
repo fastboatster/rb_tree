@@ -338,3 +338,7 @@ rb_node_t *rb_tree_lookup(rb_tree_t *tree, void *key) {
 	};
 	return ref_node;
 }
+
+int rb_tree_destroy(rb_tree_t *tree) {
+	return 0;
+}

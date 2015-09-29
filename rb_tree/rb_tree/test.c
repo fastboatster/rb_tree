@@ -1,5 +1,7 @@
 #include "rb_tree.h"
 #include <stdio.h>
+#include <stdlib.h>
+#define NUM_NODES 6
 int comp(void *key1, void *key2) {
 	int k1 = (int)key1;
 	int k2 = (int)key2;
@@ -9,6 +11,7 @@ int comp(void *key1, void *key2) {
 }
 int main(int argc, char** argv) {
 	printf( "%s", "Starting the test:\n");
+	
 	rb_tree_t *tree = rb_tree_create(&comp);
 	//testing insertion to the right part of the tree
 	rb_tree_insert(tree, node_create(NULL, (void*)6));
@@ -28,5 +31,16 @@ int main(int argc, char** argv) {
 	rb_tree_insert(tree, node_create(NULL, (void*)1));
 	rb_tree_insert(tree, node_create(NULL, (void*)1));
 	rb_tree_insert(tree, node_create(NULL, (void*)0));
+	rb_tree_t *rand_tree = rb_tree_create(&comp);
+	/*testing random number insertion*/
+	time_t t;
+	/* Intializes random number generator */
+	srand((unsigned)time(&t));
+	int i, val;
+	for (i = 0; i < NUM_NODES; i++) {
+		val = rand() % 50;
+		printf("Inserting %d\n", val);
+		rb_tree_insert(rand_tree, node_create(NULL, (void*)val));
+	};
 	return 0;
 }
